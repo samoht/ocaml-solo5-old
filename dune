@@ -1,0 +1,16 @@
+(data_only_dirs src)
+
+(rule
+ (deps build.ml)
+ (action
+  (with-stdout-to
+   dune.gen
+   (run ocaml build.ml dune))))
+
+(rule
+ (alias runtest)
+ (package solo5)
+ (action
+  (diff dune.inc dune.gen)))
+
+(include dune.inc)
