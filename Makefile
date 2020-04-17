@@ -1,4 +1,9 @@
-.PHONY: all clean
+.PHONY: all clean distclean
+
+all:
+	@if [ ! -d src ]; then ${MAKE} src; fi
+	@echo "=> ${NAME} is extracted in src/"
+	dune build
 
 VERSION=v0.6.4
 NAME=solo5-${VERSION}
@@ -13,15 +18,13 @@ ifndef FETCH
   endif
 endif
 
-all: src
-	@echo "=> ${NAME} is extracted in src/"
-	dune build
-
 clean:
-	rm -rf src ${NAME}
 	rm -f ${ARCHIVE}
 
-src: ${ARCHIVE}
+distclean:
+	rm -rf src ${NAME}
+
+src: | ${ARCHIVE}
 	rm -rf src
 	tar xvfz ${ARCHIVE}
 	mv ${NAME} src
