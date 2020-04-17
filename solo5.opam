@@ -1,0 +1,31 @@
+opam-version: "2.0"
+maintainer: [
+  "Thomas Gazagnaire <thomas@gazagnaire.org>"
+  "martin@lucina.net"
+]
+authors: [
+  "Dan Williams <djwillia@us.ibm.com>"
+  "Martin Lucina <martin@lucina.net>"
+  "Ricardo Koller <kollerr@us.ibm.com>"
+]
+license: "ISC"
+homepage: "https://github.com/solo5/solo5"
+bug-reports: "https://github.com/solo5/solo5/issues"
+dev-repo: "git+https://github.com/solo5/solo5.git"
+
+build: ["dune" "build" "-p" name "-j" jobs]
+available: arch = "x86_64" & (os = "linux" | os = "freebsd" | os = "openbsd")
+depends:[
+  "conf-pkg-config"
+  "conf-libseccomp" {build & os = "linux"}
+  "ocaml" {>= "4.03.0"}
+  "dune" {>= "2.0.0"}
+]
+synopsis: "Solo5 sandboxed execution environment (headers and scripts)"
+description: """
+Solo5 is a sandboxed execution environment primarily intended
+for, but not limited to, running applications built using various
+unikernels (a.k.a.  library operating systems).
+
+This package provides the Solo5 headers and the solo5-elftool
+scripts."""
