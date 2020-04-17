@@ -70,7 +70,27 @@ end = struct
       ]
     in
     match t with
-    | Solo5 -> [ file t "include/solo5"; file t "include/crt" ]
+    | Solo5 ->
+        let file s = file t "include/%s" s ~dst:s in
+        [
+          file "solo5/elf_abi.h";
+          file "solo5/hvt_abi.h";
+          file "solo5/mft_abi.h";
+          file "solo5/solo5.h";
+          file "solo5/solo5_version.h";
+          file "solo5/spt_abi.h";
+          (* see https://gcc.gnu.org/onlinedocs/gcc/Standards.html#Standards *)
+          file "crt/float.h";
+          (* FIXME: missing? file "crt/limits.h"; *)
+          file "crt/stdarg.h";
+          file "crt/stddef.h";
+          file "crt/iso646.h";
+          file "crt/stdbool.h";
+          file "crt/stdint.h";
+          file "crt/stdint-gcc.h";
+          file "crt/stdalign.h";
+          file "crt/stdnoreturn.h";
+        ]
     | Genode -> bindings "solo5.lib.so" :: bindings "genode_dyn.ld" :: flags
     | _ ->
         let solo5 ext = bindings (strf "solo5_%s.%s" (to_string t) ext) in

@@ -7,7 +7,23 @@
   (modules))
 
 (rule
- (targets solo5-elftool solo5 crt)
+ (targets
+   solo5-elftool
+   elf_abi.h
+   hvt_abi.h
+   mft_abi.h
+   solo5.h
+   solo5_version.h
+   spt_abi.h
+   float.h
+   stdarg.h
+   stddef.h
+   iso646.h
+   stdbool.h
+   stdint.h
+   stdint-gcc.h
+   stdalign.h
+   stdnoreturn.h)
  (deps
    cflags.pc.in
    ldflags.pc.in
@@ -19,7 +35,22 @@
  (action (bash "ocaml build.ml solo5")))
 
 (install
-  (files solo5 crt)
+  (files
+   (elf_abi.h as solo5/elf_abi.h)
+   (hvt_abi.h as solo5/hvt_abi.h)
+   (mft_abi.h as solo5/mft_abi.h)
+   (solo5.h as solo5/solo5.h)
+   (solo5_version.h as solo5/solo5_version.h)
+   (spt_abi.h as solo5/spt_abi.h)
+   (float.h as crt/float.h)
+   (stdarg.h as crt/stdarg.h)
+   (stddef.h as crt/stddef.h)
+   (iso646.h as crt/iso646.h)
+   (stdbool.h as crt/stdbool.h)
+   (stdint.h as crt/stdint.h)
+   (stdint-gcc.h as crt/stdint-gcc.h)
+   (stdalign.h as crt/stdalign.h)
+   (stdnoreturn.h as crt/stdnoreturn.h))
   (section lib)
   (package solo5))
 
