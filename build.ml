@@ -125,6 +125,11 @@ end = struct
           :: all
       | _ -> all
     in
+    let install_dir =
+      match t with
+      | Solo5 -> ""
+      | _ -> " $(realpath $(dirname %{lib:solo5:META}))"
+    in
     let bins = bin t in
     let libs = lib t in
     let targets = bins @ libs in
@@ -155,7 +160,7 @@ end = struct
  (targets%s)
  (deps%s)
  (package %s)
- (action (run ocaml build.ml %s)))
+ (action (bash "ocaml build.ml %s%s")))
 
 (install
   (files%s)
@@ -166,7 +171,7 @@ end = struct
 |}
       (String.uppercase_ascii name)
       public_name name (sources targets) (list deps) public_name name
-      (install libs) public_name bin
+      install_dir (install libs) public_name bin
 end
 
 let exec fmt =
@@ -191,8 +196,8 @@ let write_line file line =
   output_string oc line;
   close_out oc
 
-(* read a file of options, and prefix each of them with -ccopt. *)
-let gen_flags = function
+let gen_flags t install_dir =
+  match t with
   | Solo5 -> ()
   | t ->
       let src_cflags =
@@ -218,19 +223,22 @@ let gen_flags = function
          included by dune actions with [(:include %{lib:solo5-*:*flags}] .*)
       Printf.printf "=> Generating %S\n%!" ocaml_cflags;
       let cflags = read_line cflags in
+      let cflags =
+        strf "%s -isystem %s/crt -I%s/solo5" cflags install_dir install_dir
+      in
       write_line ocaml_cflags cflags;
 
       Printf.printf "=> Generating %S\n%!" ocaml_ldflags;
       let ldflags = read_line ldflags in
       write_line ocaml_ldflags ldflags
 
-let run t =
+let run t install_dir =
   exec "cp -R src %s" (dir t);
   exec "chmod +w %s" (dir t);
   chdir t;
   exec "./configure.sh";
   exec "make %s\n%!" (Config.make t);
-  gen_flags t;
+  gen_flags t install_dir;
   Sys.chdir "..";
   exec "chmod -R +w .";
   List.iter
@@ -244,8 +252,16 @@ let dune () =
   let dunes = List.map (fun (_, t) -> Files.dune t) bindings in
   Printf.printf "%s\n" (String.concat "\n\n" dunes)
 
+let usage () =
+  let bindings = String.concat "|" (List.map fst bindings) in
+  die "usage: build.ml [dune]\n    build.ml [%s] <install-dir>" bindings
+
 let () =
-  if Array.length Sys.argv <> 2 then
-    let bindings = String.concat "|" (List.map fst bindings) in
-    die "usage: build.ml [dune|%s]" bindings
-  else match Sys.argv.(1) with "dune" -> dune () | s -> run (of_string s)
+  match Array.length Sys.argv with
+  | 3 -> run (of_string Sys.argv.(1)) Sys.argv.(2)
+  | 2 -> (
+      match Sys.argv.(1) with
+      | "dune" -> dune ()
+      | "solo5" -> run Solo5 ""
+      | _ -> usage () )
+  | _ -> usage ()

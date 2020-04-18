@@ -16,7 +16,7 @@
    build.ml
    (source_tree src))
  (package solo5)
- (action (run ocaml build.ml solo5)))
+ (action (bash "ocaml build.ml solo5")))
 
 (install
   (files solo5 crt)
@@ -47,7 +47,7 @@
    hvt-ldflags)
  (deps build.ml (source_tree src))
  (package solo5-hvt)
- (action (run ocaml build.ml hvt)))
+ (action (bash "ocaml build.ml hvt $(realpath $(dirname %{lib:solo5:META}))")))
 
 (install
   (files
@@ -75,7 +75,7 @@
  (targets solo5-spt solo5_spt.o solo5_spt.lds spt-cflags spt-ldflags)
  (deps build.ml (source_tree src))
  (package solo5-spt)
- (action (run ocaml build.ml spt)))
+ (action (bash "ocaml build.ml spt $(realpath $(dirname %{lib:solo5:META}))")))
 
 (install
   (files
@@ -109,7 +109,7 @@
    virtio-ldflags)
  (deps build.ml (source_tree src))
  (package solo5-virtio)
- (action (run ocaml build.ml virtio)))
+ (action (bash "ocaml build.ml virtio $(realpath $(dirname %{lib:solo5:META}))")))
 
 (install
   (files
@@ -139,7 +139,7 @@
  (targets solo5_muen.o solo5_muen.lds muen-cflags muen-ldflags)
  (deps build.ml (source_tree src))
  (package solo5-muen)
- (action (run ocaml build.ml muen)))
+ (action (bash "ocaml build.ml muen $(realpath $(dirname %{lib:solo5:META}))")))
 
 (install
   (files
@@ -162,7 +162,7 @@
  (targets solo5.lib.so genode_dyn.ld genode-cflags genode-ldflags)
  (deps build.ml (source_tree src))
  (package solo5-genode)
- (action (run ocaml build.ml genode)))
+ (action (bash "ocaml build.ml genode $(realpath $(dirname %{lib:solo5:META}))")))
 
 (install
   (files
