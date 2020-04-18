@@ -145,6 +145,12 @@ end = struct
       {|
 ;; %s
 
+; a dummy OCaml library is needed because of ocaml/dune#3378
+(library
+  (public_name %s)
+  (name %s)
+  (modules))
+
 (rule
  (targets%s)
  (deps%s)
@@ -159,8 +165,8 @@ end = struct
 %s
 |}
       (String.uppercase_ascii name)
-      (sources targets) (list deps) public_name name (install libs) public_name
-      bin
+      public_name name (sources targets) (list deps) public_name name
+      (install libs) public_name bin
 end
 
 let exec fmt =

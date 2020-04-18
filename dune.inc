@@ -1,5 +1,11 @@
 ;; SOLO5
 
+; a dummy OCaml library is needed because of ocaml/dune#3378
+(library
+  (public_name solo5)
+  (name solo5)
+  (modules))
+
 (rule
  (targets solo5-elftool solo5 crt)
  (deps
@@ -23,6 +29,12 @@
   (package solo5))
 
 ;; HVT
+
+; a dummy OCaml library is needed because of ocaml/dune#3378
+(library
+  (public_name solo5-hvt)
+  (name hvt)
+  (modules))
 
 (rule
  (targets
@@ -53,6 +65,12 @@
 
 ;; SPT
 
+; a dummy OCaml library is needed because of ocaml/dune#3378
+(library
+  (public_name solo5-spt)
+  (name spt)
+  (modules))
+
 (rule
  (targets solo5-spt solo5_spt.o solo5_spt.lds spt-cflags spt-ldflags)
  (deps build.ml (source_tree src))
@@ -74,6 +92,12 @@
   (package solo5-spt))
 
 ;; VIRTIO
+
+; a dummy OCaml library is needed because of ocaml/dune#3378
+(library
+  (public_name solo5-virtio)
+  (name virtio)
+  (modules))
 
 (rule
  (targets
@@ -105,6 +129,12 @@
 
 ;; MUEN
 
+; a dummy OCaml library is needed because of ocaml/dune#3378
+(library
+  (public_name solo5-muen)
+  (name muen)
+  (modules))
+
 (rule
  (targets solo5_muen.o solo5_muen.lds muen-cflags muen-ldflags)
  (deps build.ml (source_tree src))
@@ -121,6 +151,12 @@
   (package solo5-muen))
 
 ;; GENODE
+
+; a dummy OCaml library is needed because of ocaml/dune#3378
+(library
+  (public_name solo5-genode)
+  (name genode)
+  (modules))
 
 (rule
  (targets solo5.lib.so genode_dyn.ld genode-cflags genode-ldflags)
