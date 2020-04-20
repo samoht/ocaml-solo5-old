@@ -137,13 +137,9 @@ end = struct
     let deps =
       let all = [ "build.ml"; "(source_tree src)" ] in
       match t with
-      | Solo5 ->
-          "cflags.pc.in"
-          :: "ldflags.pc.in"
-          :: "genode-cflags.pc.in"
-          :: "genode-ldflags.pc.in"
-          :: all
-      | _ -> all
+      | Solo5 -> all
+      | Genode -> "genode-cflags.pc.in" :: "genode-ldflags.pc.in" :: all
+      | _ -> "cflags.pc.in" :: "ldflags.pc.in" :: all
     in
     let install_dir =
       match t with
