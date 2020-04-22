@@ -71,8 +71,10 @@ end = struct
     in
     match t with
     | Solo5 ->
+        let cflag = file t "%s-cflags" (to_string t) ~dst:"cflags" in
         let file s = file t "include/%s" s ~dst:s in
         [
+          cflag;
           file "solo5/elf_abi.h";
           file "solo5/hvt_abi.h";
           file "solo5/mft_abi.h";
@@ -142,9 +144,7 @@ end = struct
       | _ -> "cflags.pc.in" :: "ldflags.pc.in" :: all
     in
     let install_dir =
-      match t with
-      | Solo5 -> ""
-      | _ -> " $(realpath $(dirname %{lib:solo5:META}))"
+      strf "$(realpath $(dirname %%{lib:%s:dune-package}))" public_name
     in
     let bins = bin t in
     let libs = lib t in
@@ -177,7 +177,7 @@ end = struct
  (targets%s)
  (deps%s)
  (package %s)
- (action (bash "./build.exe %s%s")))
+ (action (bash "./build.exe %s %s")))
 
 (install
   (files%s)
@@ -215,34 +215,39 @@ let write_line file line =
 
 let gen_flags t install_dir =
   match t with
-  | Solo5 -> ()
+  | Solo5 ->
+      (* CFLAGS contains links to the solo5 headers *)
+      let ocaml_cflags = strf "%s-cflags" (to_string t) in
+
+      (* Copy the .pc.in files in and call [make] to substitue CFLAGS. *)
+      Printf.printf "=> Generating %S\n%!" ocaml_cflags;
+      let cflags =
+        strf "(-isystem %s/crt -I%s/solo5)" install_dir install_dir
+      in
+      write_line ocaml_cflags cflags
   | t ->
       let src_cflags =
         strf "../%s.pc.in"
           (match t with Genode -> "genode-cflags" | _ -> "cflags")
       in
+      (* LDFLAGS contains links to solo5 object files. *)
       let src_ldflags =
         strf "../%s.pc.in"
           (match t with Genode -> "genode-ldflags" | _ -> "ldflags")
       in
       let cflags = strf "%s-cflags.pc" (dir t) in
       let ldflags = strf "%s-ldflags.pc" (dir t) in
-      let ocaml_cflags = strf "%s-cflags" (to_string t) in
       let ocaml_ldflags = strf "%s-ldflags" (to_string t) in
+      let ocaml_cflags = strf "%s-cflags" (to_string t) in
 
-      (* Copy the .pc.in files in and call [make] to substitue CFLAGS and
-         LDFLAGS variables. *)
-      exec "cp %s %s.in" src_cflags cflags;
+      Printf.printf "=> Generating %S\n%!" ocaml_ldflags;
       exec "cp %s %s.in" src_ldflags ldflags;
+      exec "cp %s %s.in" src_cflags cflags;
       exec "make %s %s" cflags ldflags;
 
-      (* Read CFLAGS and LDFLAGS ; just add [( ... )] so that these can be
-         included by dune actions with [(:include %{lib:solo5-*:*flags}] .*)
       Printf.printf "=> Generating %S\n%!" ocaml_cflags;
       let cflags = read_line cflags in
-      let cflags =
-        strf "%s -isystem %s/crt -I%s/solo5" cflags install_dir install_dir
-      in
+      let cflags = strf "(%s (:include %%{lib:solo5:cflags}))" cflags in
       write_line ocaml_cflags cflags;
 
       Printf.printf "=> Generating %S\n%!" ocaml_ldflags;
@@ -250,10 +255,10 @@ let gen_flags t install_dir =
       let ldflags =
         match t with
         | Genode ->
-            strf "%s -T %s/genode_dyn.ld %s/solo5.lib.so" ldflags install_dir
+            strf "(%s -T %s/genode_dyn.ld %s/solo5.lib.so)" ldflags install_dir
               install_dir
         | _ ->
-            strf "%s  -T %s/solo5_hvt.lds %s/solo5_hvt.o" ldflags install_dir
+            strf "(%s  -T %s/solo5_hvt.lds %s/solo5_hvt.o)" ldflags install_dir
               install_dir
       in
       write_line ocaml_ldflags ldflags

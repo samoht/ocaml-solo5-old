@@ -9,6 +9,7 @@
 (rule
  (targets
    solo5-elftool
+   solo5-cflags
    elf_abi.h
    hvt_abi.h
    mft_abi.h
@@ -26,10 +27,11 @@
    stdnoreturn.h)
  (deps build.exe (source_tree src))
  (package solo5)
- (action (bash "./build.exe solo5")))
+ (action (bash "./build.exe solo5 $(realpath $(dirname %{lib:solo5:dune-package}))")))
 
 (install
   (files
+   (solo5-cflags as cflags)
    (elf_abi.h as solo5/elf_abi.h)
    (hvt_abi.h as solo5/hvt_abi.h)
    (mft_abi.h as solo5/mft_abi.h)
@@ -73,7 +75,7 @@
    hvt-ldflags)
  (deps cflags.pc.in ldflags.pc.in build.exe (source_tree src))
  (package solo5-hvt)
- (action (bash "./build.exe hvt $(realpath $(dirname %{lib:solo5:META}))")))
+ (action (bash "./build.exe hvt $(realpath $(dirname %{lib:solo5-hvt:dune-package}))")))
 
 (install
   (files
@@ -102,7 +104,7 @@
  (targets solo5-spt solo5_spt.o solo5_spt.lds spt-cflags spt-ldflags)
  (deps cflags.pc.in ldflags.pc.in build.exe (source_tree src))
  (package solo5-spt)
- (action (bash "./build.exe spt $(realpath $(dirname %{lib:solo5:META}))")))
+ (action (bash "./build.exe spt $(realpath $(dirname %{lib:solo5-spt:dune-package}))")))
 
 (install
   (files
@@ -137,7 +139,7 @@
    virtio-ldflags)
  (deps cflags.pc.in ldflags.pc.in build.exe (source_tree src))
  (package solo5-virtio)
- (action (bash "./build.exe virtio $(realpath $(dirname %{lib:solo5:META}))")))
+ (action (bash "./build.exe virtio $(realpath $(dirname %{lib:solo5-virtio:dune-package}))")))
 
 (install
   (files
@@ -168,7 +170,7 @@
  (targets solo5_muen.o solo5_muen.lds muen-cflags muen-ldflags)
  (deps cflags.pc.in ldflags.pc.in build.exe (source_tree src))
  (package solo5-muen)
- (action (bash "./build.exe muen $(realpath $(dirname %{lib:solo5:META}))")))
+ (action (bash "./build.exe muen $(realpath $(dirname %{lib:solo5-muen:dune-package}))")))
 
 (install
   (files
@@ -192,7 +194,7 @@
  (targets solo5.lib.so genode_dyn.ld genode-cflags genode-ldflags)
  (deps genode-cflags.pc.in genode-ldflags.pc.in build.exe (source_tree src))
  (package solo5-genode)
- (action (bash "./build.exe genode $(realpath $(dirname %{lib:solo5:META}))")))
+ (action (bash "./build.exe genode $(realpath $(dirname %{lib:solo5-genode:dune-package}))")))
 
 (install
   (files
