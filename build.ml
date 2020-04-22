@@ -72,26 +72,17 @@ end = struct
     match t with
     | Solo5 ->
         let cflag = file t "%s-cflags" (to_string t) ~dst:"cflags" in
-        let file s = file t "include/%s" s ~dst:s in
+        let solo5 s = file t "include/solo5/%s" s ~dst:s in
         [
           cflag;
-          file "solo5/elf_abi.h";
-          file "solo5/hvt_abi.h";
-          file "solo5/mft_abi.h";
-          file "solo5/solo5.h";
-          file "solo5/solo5_version.h";
-          file "solo5/spt_abi.h";
-          (* see https://gcc.gnu.org/onlinedocs/gcc/Standards.html#Standards *)
-          file "crt/float.h";
-          (* FIXME: missing? file "crt/limits.h"; *)
-          file "crt/stdarg.h";
-          file "crt/stddef.h";
-          file "crt/iso646.h";
-          file "crt/stdbool.h";
-          file "crt/stdint.h";
-          file "crt/stdint-gcc.h";
-          file "crt/stdalign.h";
-          file "crt/stdnoreturn.h";
+          (* solo5 headers *)
+          solo5 "elf_abi.h";
+          solo5 "hvt_abi.h";
+          solo5 "mft_abi.h";
+          solo5 "solo5.h";
+          solo5 "solo5_version.h";
+          solo5 "spt_abi.h";
+          file t "include/crt";
         ]
     | Genode -> bindings "solo5.lib.so" :: bindings "genode_dyn.ld" :: flags
     | _ ->
@@ -136,16 +127,16 @@ end = struct
              if src = l.dst then l.dst else strf "(%s as %s)" src l.dst)
            l)
     in
+    let dune_package = strf "%%{lib:%s:dune-package}" public_name in
     let deps =
-      let all = [ "build.exe"; "(source_tree src)" ] in
+      let all = [ "build.exe"; "(source_tree src)"; dune_package ] in
       match t with
       | Solo5 -> all
       | Genode -> "genode-cflags.pc.in" :: "genode-ldflags.pc.in" :: all
       | _ -> "cflags.pc.in" :: "ldflags.pc.in" :: all
     in
-    let install_dir =
-      strf "$(realpath $(dirname %%{lib:%s:dune-package}))" public_name
-    in
+    let solo5_dir = "$(realpath $(dirname %{lib:solo5:dune-package}))" in
+    let install_dir = strf "$(realpath $(dirname %s))" dune_package in
     let bins = bin t in
     let libs = lib t in
     let targets = bins @ libs in
@@ -177,7 +168,12 @@ end = struct
  (targets%s)
  (deps%s)
  (package %s)
- (action (bash "./build.exe %s %s")))
+ (action (progn
+   (bash "cp -R src %s")
+   (bash
+     "./build.exe %s \
+       %s \
+       %s"))))
 
 (install
   (files%s)
@@ -187,8 +183,8 @@ end = struct
 %s
 |}
       (String.uppercase_ascii name)
-      public_name name libraries (sources targets) (list deps) public_name name
-      install_dir (install libs) public_name bin
+      public_name name libraries (sources targets) (list deps) public_name
+      (dir t) name solo5_dir install_dir (install libs) public_name bin
 end
 
 let exec fmt =
@@ -213,7 +209,7 @@ let write_line file line =
   output_string oc line;
   close_out oc
 
-let gen_flags t install_dir =
+let gen_flags t solo5_dir install_dir =
   match t with
   | Solo5 ->
       (* CFLAGS contains links to the solo5 headers *)
@@ -247,7 +243,9 @@ let gen_flags t install_dir =
 
       Printf.printf "=> Generating %S\n%!" ocaml_cflags;
       let cflags = read_line cflags in
-      let cflags = strf "(%s (:include %%{lib:solo5:cflags}))" cflags in
+      let cflags =
+        strf "(%s -isystem %s/crt -I%s/solo5)" cflags solo5_dir solo5_dir
+      in
       write_line ocaml_cflags cflags;
 
       Printf.printf "=> Generating %S\n%!" ocaml_ldflags;
@@ -255,23 +253,20 @@ let gen_flags t install_dir =
       let ldflags =
         match t with
         | Genode ->
-            strf "(%s -T %s/genode_dyn.ld %s/solo5.lib.so)" ldflags install_dir
+            strf "%s -T %s/genode_dyn.ld %s/solo5.lib.so" ldflags install_dir
               install_dir
         | _ ->
-            strf "(%s  -T %s/solo5_hvt.lds %s/solo5_hvt.o)" ldflags install_dir
+            strf "%s -T %s/solo5_hvt.lds %s/solo5_hvt.o" ldflags install_dir
               install_dir
       in
       write_line ocaml_ldflags ldflags
 
-let run t install_dir =
-  exec "cp -R src %s" (dir t);
-  exec "chmod +w %s" (dir t);
+let run t solo5_dir install_dir =
   chdir t;
   exec "./configure.sh";
   exec "make %s\n%!" (Config.make t);
-  gen_flags t install_dir;
+  gen_flags t solo5_dir install_dir;
   Sys.chdir "..";
-  exec "chmod -R +w .";
   List.iter
     (fun src ->
       let dst = Filename.basename src in
@@ -289,10 +284,6 @@ let usage () =
 
 let () =
   match Array.length Sys.argv with
-  | 3 -> run (of_string Sys.argv.(1)) Sys.argv.(2)
-  | 2 -> (
-      match Sys.argv.(1) with
-      | "dune" -> dune ()
-      | "solo5" -> run Solo5 ""
-      | _ -> usage () )
+  | 4 -> run (of_string Sys.argv.(1)) Sys.argv.(2) Sys.argv.(3)
+  | 2 -> ( match Sys.argv.(1) with "dune" -> dune () | _ -> usage () )
   | _ -> usage ()

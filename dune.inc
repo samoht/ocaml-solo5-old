@@ -16,37 +16,26 @@
    solo5.h
    solo5_version.h
    spt_abi.h
-   float.h
-   stdarg.h
-   stddef.h
-   iso646.h
-   stdbool.h
-   stdint.h
-   stdint-gcc.h
-   stdalign.h
-   stdnoreturn.h)
- (deps build.exe (source_tree src))
+   crt)
+ (deps build.exe (source_tree src) %{lib:solo5:dune-package})
  (package solo5)
- (action (bash "./build.exe solo5 $(realpath $(dirname %{lib:solo5:dune-package}))")))
+ (action (progn
+   (bash "cp -R src src-solo5")
+   (bash
+     "./build.exe solo5 \
+       $(realpath $(dirname %{lib:solo5:dune-package})) \
+       $(realpath $(dirname %{lib:solo5:dune-package}))"))))
 
 (install
   (files
    (solo5-cflags as cflags)
-   (elf_abi.h as solo5/elf_abi.h)
-   (hvt_abi.h as solo5/hvt_abi.h)
-   (mft_abi.h as solo5/mft_abi.h)
-   (solo5.h as solo5/solo5.h)
-   (solo5_version.h as solo5/solo5_version.h)
-   (spt_abi.h as solo5/spt_abi.h)
-   (float.h as crt/float.h)
-   (stdarg.h as crt/stdarg.h)
-   (stddef.h as crt/stddef.h)
-   (iso646.h as crt/iso646.h)
-   (stdbool.h as crt/stdbool.h)
-   (stdint.h as crt/stdint.h)
-   (stdint-gcc.h as crt/stdint-gcc.h)
-   (stdalign.h as crt/stdalign.h)
-   (stdnoreturn.h as crt/stdnoreturn.h))
+   elf_abi.h
+   hvt_abi.h
+   mft_abi.h
+   solo5.h
+   solo5_version.h
+   spt_abi.h
+   crt)
   (section lib)
   (package solo5))
 
@@ -73,9 +62,19 @@
    solo5_hvt.lds
    hvt-cflags
    hvt-ldflags)
- (deps cflags.pc.in ldflags.pc.in build.exe (source_tree src))
+ (deps
+   cflags.pc.in
+   ldflags.pc.in
+   build.exe
+   (source_tree src)
+   %{lib:solo5-hvt:dune-package})
  (package solo5-hvt)
- (action (bash "./build.exe hvt $(realpath $(dirname %{lib:solo5-hvt:dune-package}))")))
+ (action (progn
+   (bash "cp -R src src-hvt")
+   (bash
+     "./build.exe hvt \
+       $(realpath $(dirname %{lib:solo5:dune-package})) \
+       $(realpath $(dirname %{lib:solo5-hvt:dune-package}))"))))
 
 (install
   (files
@@ -102,9 +101,19 @@
 
 (rule
  (targets solo5-spt solo5_spt.o solo5_spt.lds spt-cflags spt-ldflags)
- (deps cflags.pc.in ldflags.pc.in build.exe (source_tree src))
+ (deps
+   cflags.pc.in
+   ldflags.pc.in
+   build.exe
+   (source_tree src)
+   %{lib:solo5-spt:dune-package})
  (package solo5-spt)
- (action (bash "./build.exe spt $(realpath $(dirname %{lib:solo5-spt:dune-package}))")))
+ (action (progn
+   (bash "cp -R src src-spt")
+   (bash
+     "./build.exe spt \
+       $(realpath $(dirname %{lib:solo5:dune-package})) \
+       $(realpath $(dirname %{lib:solo5-spt:dune-package}))"))))
 
 (install
   (files
@@ -137,9 +146,19 @@
    solo5_virtio.lds
    virtio-cflags
    virtio-ldflags)
- (deps cflags.pc.in ldflags.pc.in build.exe (source_tree src))
+ (deps
+   cflags.pc.in
+   ldflags.pc.in
+   build.exe
+   (source_tree src)
+   %{lib:solo5-virtio:dune-package})
  (package solo5-virtio)
- (action (bash "./build.exe virtio $(realpath $(dirname %{lib:solo5-virtio:dune-package}))")))
+ (action (progn
+   (bash "cp -R src src-virtio")
+   (bash
+     "./build.exe virtio \
+       $(realpath $(dirname %{lib:solo5:dune-package})) \
+       $(realpath $(dirname %{lib:solo5-virtio:dune-package}))"))))
 
 (install
   (files
@@ -168,9 +187,19 @@
 
 (rule
  (targets solo5_muen.o solo5_muen.lds muen-cflags muen-ldflags)
- (deps cflags.pc.in ldflags.pc.in build.exe (source_tree src))
+ (deps
+   cflags.pc.in
+   ldflags.pc.in
+   build.exe
+   (source_tree src)
+   %{lib:solo5-muen:dune-package})
  (package solo5-muen)
- (action (bash "./build.exe muen $(realpath $(dirname %{lib:solo5-muen:dune-package}))")))
+ (action (progn
+   (bash "cp -R src src-muen")
+   (bash
+     "./build.exe muen \
+       $(realpath $(dirname %{lib:solo5:dune-package})) \
+       $(realpath $(dirname %{lib:solo5-muen:dune-package}))"))))
 
 (install
   (files
@@ -192,9 +221,19 @@
 
 (rule
  (targets solo5.lib.so genode_dyn.ld genode-cflags genode-ldflags)
- (deps genode-cflags.pc.in genode-ldflags.pc.in build.exe (source_tree src))
+ (deps
+   genode-cflags.pc.in
+   genode-ldflags.pc.in
+   build.exe
+   (source_tree src)
+   %{lib:solo5-genode:dune-package})
  (package solo5-genode)
- (action (bash "./build.exe genode $(realpath $(dirname %{lib:solo5-genode:dune-package}))")))
+ (action (progn
+   (bash "cp -R src src-genode")
+   (bash
+     "./build.exe genode \
+       $(realpath $(dirname %{lib:solo5:dune-package})) \
+       $(realpath $(dirname %{lib:solo5-genode:dune-package}))"))))
 
 (install
   (files

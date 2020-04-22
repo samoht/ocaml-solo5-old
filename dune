@@ -1,9 +1,9 @@
 (data_only_dirs src)
 
-(executable (name build))
+(executable
+ (name build))
 
 (rule
- (deps build.ml)
  (action
   (with-stdout-to
    dune.gen
