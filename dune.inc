@@ -59,6 +59,7 @@
 (library
   (public_name solo5-hvt)
   (name hvt)
+  (libraries solo5)
   (modules))
 
 (rule
@@ -94,6 +95,7 @@
 (library
   (public_name solo5-spt)
   (name spt)
+  (libraries solo5)
   (modules))
 
 (rule
@@ -122,6 +124,7 @@
 (library
   (public_name solo5-virtio)
   (name virtio)
+  (libraries solo5)
   (modules))
 
 (rule
@@ -158,6 +161,7 @@
 (library
   (public_name solo5-muen)
   (name muen)
+  (libraries solo5)
   (modules))
 
 (rule
@@ -181,6 +185,7 @@
 (library
   (public_name solo5-genode)
   (name genode)
+  (libraries solo5)
   (modules))
 
 (rule

@@ -149,6 +149,10 @@ end = struct
     let bins = bin t in
     let libs = lib t in
     let targets = bins @ libs in
+    let libraries = match t with
+      | Solo5 -> ""
+      | _ -> "\n  (libraries solo5)"
+    in
     let bin =
       match bins with
       | [] -> ""
@@ -169,7 +173,7 @@ end = struct
 ; a dummy OCaml library is needed because of ocaml/dune#3378
 (library
   (public_name %s)
-  (name %s)
+  (name %s)%s
   (modules))
 
 (rule
@@ -186,7 +190,7 @@ end = struct
 %s
 |}
       (String.uppercase_ascii name)
-      public_name name (sources targets) (list deps) public_name name
+      public_name name libraries (sources targets) (list deps) public_name name
       install_dir (install libs) public_name bin
 end
 
