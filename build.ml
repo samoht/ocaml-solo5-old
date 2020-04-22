@@ -53,7 +53,7 @@ module Files : sig
 end = struct
   type file = { src : string; dst : string }
 
-  let file t ?dst ?(install = true) fmt =
+  let file t ?dst fmt =
     Printf.ksprintf
       (fun s ->
         let dst = match dst with None -> Filename.basename s | Some s -> s in
@@ -135,7 +135,7 @@ end = struct
            l)
     in
     let deps =
-      let all = [ "build.ml"; "(source_tree src)" ] in
+      let all = [ "build.exe"; "(source_tree src)" ] in
       match t with
       | Solo5 -> all
       | Genode -> "genode-cflags.pc.in" :: "genode-ldflags.pc.in" :: all
@@ -149,10 +149,7 @@ end = struct
     let bins = bin t in
     let libs = lib t in
     let targets = bins @ libs in
-    let libraries = match t with
-      | Solo5 -> ""
-      | _ -> "\n  (libraries solo5)"
-    in
+    let libraries = match t with Solo5 -> "" | _ -> "\n  (libraries solo5)" in
     let bin =
       match bins with
       | [] -> ""
@@ -180,7 +177,7 @@ end = struct
  (targets%s)
  (deps%s)
  (package %s)
- (action (bash "ocaml build.ml %s%s")))
+ (action (bash "./build.exe %s%s")))
 
 (install
   (files%s)
@@ -250,6 +247,15 @@ let gen_flags t install_dir =
 
       Printf.printf "=> Generating %S\n%!" ocaml_ldflags;
       let ldflags = read_line ldflags in
+      let ldflags =
+        match t with
+        | Genode ->
+            strf "%s -T %s/genode_dyn.ld %s/solo5.lib.so" ldflags install_dir
+              install_dir
+        | _ ->
+            strf "%s  -T %s/solo5_hvt.lds %s/solo5_hvt.o" ldflags install_dir
+              install_dir
+      in
       write_line ocaml_ldflags ldflags
 
 let run t install_dir =
@@ -274,7 +280,7 @@ let dune () =
 
 let usage () =
   let bindings = String.concat "|" (List.map fst bindings) in
-  die "usage: build.ml [dune]\n    build.ml [%s] <install-dir>" bindings
+  die "usage: ./build.exe [dune]\n    ./build.exe [%s] <install-dir>" bindings
 
 let () =
   match Array.length Sys.argv with
