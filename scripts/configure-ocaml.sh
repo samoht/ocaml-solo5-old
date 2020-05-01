@@ -20,6 +20,7 @@ OCAML_BUILD_ARCH=
 # the latter for the rest of the OCaml build system.
 case "${BUILD_ARCH}" in
     amd64|x86_64)
+        BUILD_ARCH="x86_64"
         OCAML_BUILD_ARCH="amd64"
         ;;
     aarch64)

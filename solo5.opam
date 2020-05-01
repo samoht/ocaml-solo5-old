@@ -20,7 +20,6 @@ depends: [
   "conf-libseccomp" {build & os = "linux"}
   "ocaml" {>= "4.08.0"}
   "dune" {>= "2.5.0"}
-  "solo5" {= version}
 ]
 available:
   (arch = "x86_64" | arch = "arm64") &
@@ -33,16 +32,10 @@ depexts: [
   ["linux-libc-dev"] {os-distribution = "ubuntu"}
 ]
 
-synopsis: "Solo5 sandboxed execution environment (hvt target)"
+synopsis: "Solo5 sandboxed execution environment (headers)"
 description: """
 Solo5 is a sandboxed execution environment primarily intended
 for, but not limited to, running applications built using various
 unikernels (a.k.a.  library operating systems).
 
-This package provides the Solo5 components needed to build and
-run MirageOS unikernels on the "hvt" target, including the
-"solo5-hvt" tender source code, and "solo5-hvt-configure" script
-used to specialize the tender at MirageOS unikernel build time.
-
-The "hvt" target is supported on 64-bit Linux, FreeBSD and
-OpenBSD systems with hardware virtualization."""
+This package provides the Solo5 headers."""

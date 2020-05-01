@@ -3,6 +3,7 @@
 (library
  (public_name solo5-muen)
  (name muen)
+ (libraries solo5)
  (modules))
 
 (rule
@@ -13,9 +14,15 @@
    %{targets}
    (progn
     (bash "echo \"($(cat solo5/cflags.pc) -isystem \"")
-    ; FIXME: do not use realpath
-    (bash "echo \"$(realpath $(dirname %{lib:solo5-muen:dune-package}))/crt\"")
-    (bash "echo \" -I$(realpath $(dirname %{lib:solo5-muen:dune-package})))\"")))))
+    (bash
+     ; FIXME: do not use realpath and dirname
+     "echo \"$(realpath $(dirname %{lib:solo5:dune-package}))/crt\"")
+    (bash
+     ; FIXME: do not use realpath and dirname
+     "echo \" -I$(realpath $(dirname %{lib:solo5:dune-package}))\"")
+    (bash
+     ; FIXME: do not use realpath and dirname
+     "echo \" -I$(realpath $(dirname %{lib:solo5-muen:dune-package})))\"")))))
 
 (rule
  (targets ldflags)
@@ -25,7 +32,9 @@
    %{targets}
    (progn
     (echo "%{read:solo5/ldflags.pc}")
-    (bash "echo \"-L$(realpath $(dirname %{lib:solo5-muen:dune-package}))\"")
+    (bash
+     ; FIXME: do not use realpath and dirname
+     "echo \"-L$(realpath $(dirname %{lib:solo5-muen:dune-package}))\"")
     (echo " -lasmrun -lnolibc -lopenlibm")))))
 
 (install
@@ -61,8 +70,7 @@
     (run %{make} CONFIG_HVT= CONFIG_SPT= CONFIG_VIRTIO= CONFIG_MUEN=1
       CONFIG_GENODE= %{targets}))))
  (rule
-  (targets solo5_muen.o solo5_muen.lds elf_abi.h hvt_abi.h mft_abi.h solo5.h
-    solo5_version.h spt_abi.h crt solo5-elftool)
+  (targets solo5_muen.o solo5_muen.lds)
   (package solo5-muen)
   (deps
    (source_tree .))
@@ -72,23 +80,10 @@
     (run %{make} CONFIG_HVT= CONFIG_SPT= CONFIG_VIRTIO= CONFIG_MUEN=1
       CONFIG_GENODE=)
     (bash "cp -R bindings/muen/solo5_muen.o .")
-    (bash "cp -R bindings/muen/solo5_muen.lds .")
-    (bash "cp -R include/solo5/elf_abi.h .")
-    (bash "cp -R include/solo5/hvt_abi.h .")
-    (bash "cp -R include/solo5/mft_abi.h .")
-    (bash "cp -R include/solo5/solo5.h .")
-    (bash "cp -R include/solo5/solo5_version.h .")
-    (bash "cp -R include/solo5/spt_abi.h .")
-    (bash "cp -R include/crt .")
-    (bash "cp -R elftool/solo5-elftool ."))))
+    (bash "cp -R bindings/muen/solo5_muen.lds ."))))
  (install
-  (files solo5_muen.o solo5_muen.lds elf_abi.h hvt_abi.h mft_abi.h solo5.h
-    solo5_version.h spt_abi.h crt)
+  (files solo5_muen.o solo5_muen.lds)
   (section lib)
-  (package solo5-muen))
- (install
-  (files solo5-elftool)
-  (section libexec)
   (package solo5-muen)))
 
 (subdir
@@ -116,8 +111,8 @@
   (extra_deps
    (source_tree .)
    (source_tree ../openlibm)
-   %{lib:solo5-muen:crt}
-   %{lib:solo5-muen:solo5.h}))
+   %{lib:solo5:crt}
+   %{lib:solo5:solo5.h}))
  (install
   (section lib)
   (package solo5-muen)
@@ -159,8 +154,8 @@
   (deps
    (source_tree .)
    (source_tree ../nolibc)
-   %{lib:solo5-muen:crt}
-   %{lib:solo5-muen:solo5.h})
+   %{lib:solo5:crt}
+   %{lib:solo5:solo5.h})
   (targets libopenlibm.a)
   (package solo5-muen)
   (action
@@ -217,8 +212,8 @@
    (glob_files runtime/caml/**)
    (glob_files tools/**)
    (glob_files build-aux/**)
-   %{lib:solo5-muen:crt}
-   %{lib:solo5-muen:solo5.h}
+   %{lib:solo5:crt}
+   %{lib:solo5:solo5.h}
    (source_tree ../nolibc)
    (source_tree ../openlibm))
   ; s.h and m.h are listed here as dune doesn't like targets in subdir ocaml/dune#3374
@@ -237,8 +232,8 @@
     ; normal deps
     (source_tree ../../nolibc)
     (source_tree ../../openlibm)
-    %{lib:solo5-muen:crt}
-    %{lib:solo5-muen:solo5.h}
+    %{lib:solo5:crt}
+    %{lib:solo5:solo5.h}
     ../VERSION
     ../Makefile.config
     ../Makefile.common

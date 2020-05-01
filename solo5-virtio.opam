@@ -18,9 +18,9 @@ build: ["dune" "build" "-p" name "-j" jobs]
 depends: [
   "conf-pkg-config"
   "conf-libseccomp" {build & os = "linux"}
-  "ocaml" {>= "4.03.0"}
-  "dune" {>= "2.0.0"}
-  "solo5"
+  "ocaml" {>= "4.08.0"}
+  "dune" {>= "2.5.0"}
+  "solo5" {= version}
 ]
 available: arch = "x86_64" & (os = "linux" | os = "freebsd" | os = "openbsd")
 

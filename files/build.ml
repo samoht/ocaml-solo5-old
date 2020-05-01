@@ -40,7 +40,8 @@ let compact_list indent l =
   List.iter
     (fun w ->
       let max = if !first_line then 70 - indent else 75 in
-      if Buffer.length line + 1 + String.length w > max then flush ();
+      let wn = String.length w in
+      if wn >= 40 || Buffer.length line + wn >= max then flush ();
       Buffer.add_char line ' ';
       Buffer.add_string line w)
     l;
@@ -85,24 +86,11 @@ end = struct
 
   let lib t =
     let bindings f = file "bindings/%s/%s" (to_string t) f in
-    let headers =
-      let solo5 s = file "include/solo5/%s" s ~dst:s in
-      [
-        (* solo5 headers *)
-        solo5 "elf_abi.h";
-        solo5 "hvt_abi.h";
-        solo5 "mft_abi.h";
-        solo5 "solo5.h";
-        solo5 "solo5_version.h";
-        solo5 "spt_abi.h";
-        file "include/crt";
-      ]
-    in
     match t with
-    | Genode -> bindings "solo5.lib.so" :: bindings "genode_dyn.ld" :: headers
+    | Genode -> [ bindings "solo5.lib.so"; bindings "genode_dyn.ld" ]
     | _ ->
         let solo5 ext = bindings (strf "solo5_%s.%s" (to_string t) ext) in
-        solo5 "o" :: solo5 "lds" :: headers
+        [ solo5 "o"; solo5 "lds" ]
 
   let bin t =
     let tender s = file "tenders/%s/solo5-%s%s" (to_string t) (to_string t) s in
@@ -118,8 +106,6 @@ end = struct
     | Virtio -> [ script "mkimage"; script "run" ]
     | Muen | Genode -> []
 
-  let libexec _ = [ file "elftool/solo5-elftool" ]
-
   let main t =
     let s = to_string t in
     strf
@@ -129,6 +115,7 @@ end = struct
 (library
  (public_name solo5-%s)
  (name %s)
+ (libraries solo5)
  (modules))
 
 (rule
@@ -139,9 +126,15 @@ end = struct
    %%{targets}
    (progn
     (bash "echo \"($(cat solo5/cflags.pc) -isystem \"")
-    ; FIXME: do not use realpath
-    (bash "echo \"$(realpath $(dirname %%{lib:solo5-%s:dune-package}))/crt\"")
-    (bash "echo \" -I$(realpath $(dirname %%{lib:solo5-%s:dune-package})))\"")))))
+    (bash
+     ; FIXME: do not use realpath and dirname
+     "echo \"$(realpath $(dirname %%{lib:solo5:dune-package}))/crt\"")
+    (bash
+     ; FIXME: do not use realpath and dirname
+     "echo \" -I$(realpath $(dirname %%{lib:solo5:dune-package}))\"")
+    (bash
+     ; FIXME: do not use realpath and dirname
+     "echo \" -I$(realpath $(dirname %%{lib:solo5-%s:dune-package})))\"")))))
 
 (rule
  (targets ldflags)
@@ -151,7 +144,9 @@ end = struct
    %%{targets}
    (progn
     (echo "%%{read:solo5/ldflags.pc}")
-    (bash "echo \"-L$(realpath $(dirname %%{lib:solo5-%s:dune-package}))\"")
+    (bash
+     ; FIXME: do not use realpath and dirname
+     "echo \"-L$(realpath $(dirname %%{lib:solo5-%s:dune-package}))\"")
     (echo " -lasmrun -lnolibc -lopenlibm")))))
 
 (install
@@ -159,14 +154,14 @@ end = struct
  (section lib)
  (package solo5-%s))
 |}
-      s s s s s s s s
+      s s s s s s s
 
   let solo5 t =
     let name = to_string t in
     let public_name = "solo5-" ^ to_string t in
     let sources l = compact_list 3 l in
-    let install l =
-      compact_list 3
+    let install indent l =
+      compact_list indent
         (List.map
            (fun l ->
              let src = Filename.basename l.src in
@@ -175,8 +170,7 @@ end = struct
     in
     let bins = bin t in
     let libs = lib t in
-    let libexecs = libexec t in
-    let all_files = bins @ libs @ libexecs in
+    let all_files = bins @ libs in
     let copies =
       list 4 (List.map (fun l -> strf "(bash \"cp -R %s .\")" l.src) all_files)
     in
@@ -193,7 +187,7 @@ end = struct
   (package %s))
 
   |}
-            (install bins) public_name
+            (install 2 bins) public_name
     in
     strf
       {|
@@ -233,15 +227,11 @@ end = struct
   (files%s)
   (section lib)
   (package %s))
- (install
-  (files%s)
-  (section libexec)
-  (package %s))
  %s
 |}
       (String.uppercase_ascii name)
       public_name config public_name config (sources targets) public_name config
-      copies (install libs) public_name (install libexecs) public_name bin
+      copies (install 3 libs) public_name bin
 
   let nolibc t =
     let s = to_string t in
@@ -270,8 +260,8 @@ end = struct
   (extra_deps
    (source_tree .)
    (source_tree ../openlibm)
-   %%{lib:solo5-%s:crt}
-   %%{lib:solo5-%s:solo5.h}))
+   %%{lib:solo5:crt}
+   %%{lib:solo5:solo5.h}))
  (install
   (section lib)
   (package solo5-%s)
@@ -300,7 +290,7 @@ end = struct
    (include/sys/types.h as sys/types.h)
    (include/sys/wait.h as sys/wait.h)))
 |}
-      s s s
+      s
 
   let openlibm t =
     let s = to_string t in
@@ -317,8 +307,8 @@ end = struct
   (deps
    (source_tree .)
    (source_tree ../nolibc)
-   %%{lib:solo5-%s:crt}
-   %%{lib:solo5-%s:solo5.h})
+   %%{lib:solo5:crt}
+   %%{lib:solo5:solo5.h})
   (targets libopenlibm.a)
   (package solo5-%s)
   (action
@@ -334,7 +324,7 @@ end = struct
     src/i386_fpmath.h src/math_private_openbsd.h src/bsd_cdefs.h src/k_log.h
     src/powerpc_fpmath.h src/cdefs-compat.h src/k_logf.h src/types-compat.h))
 |}
-      s s s s
+      s s
 
   let ocaml t =
     let s = to_string t in
@@ -379,8 +369,8 @@ end = struct
    (glob_files runtime/caml/**)
    (glob_files tools/**)
    (glob_files build-aux/**)
-   %%{lib:solo5-%s:crt}
-   %%{lib:solo5-%s:solo5.h}
+   %%{lib:solo5:crt}
+   %%{lib:solo5:solo5.h}
    (source_tree ../nolibc)
    (source_tree ../openlibm))
   ; s.h and m.h are listed here as dune doesn't like targets in subdir ocaml/dune#3374
@@ -399,8 +389,8 @@ end = struct
     ; normal deps
     (source_tree ../../nolibc)
     (source_tree ../../openlibm)
-    %%{lib:solo5-%s:crt}
-    %%{lib:solo5-%s:solo5.h}
+    %%{lib:solo5:crt}
+    %%{lib:solo5:solo5.h}
     ../VERSION
     ../Makefile.config
     ../Makefile.common
@@ -437,7 +427,7 @@ end = struct
     (../domain_state.h as caml/domain_state.h)
     (../domain_state.tbl as caml/domain_state.tbl))))
 |}
-      s s s s s s
+      s s
 
   let dune t =
     strf
