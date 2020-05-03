@@ -49,3 +49,32 @@
   (section lib)
   (package solo5)
   (files elf_abi.h hvt_abi.h mft_abi.h solo5.h solo5_version.h spt_abi.h crt)))
+
+(subdir
+ vendor/freestanding/nolibc/include
+ (install
+  (section lib)
+  (package solo5)
+  (files
+   assert.h
+   ctype.h
+   dirent.h
+   endian.h
+   errno.h
+   fcntl.h
+   features.h
+   limits.h
+   math.h
+   setjmp.h
+   signal.h
+   stdio.h
+   stdlib.h
+   string.h
+   time.h
+   unistd.h
+   (sys/ioctl.h as sys/ioctl.h)
+   (sys/stat.h as sys/stat.h)
+   (sys/time.h as sys/time.h)
+   (sys/times.h as sys/times.h)
+   (sys/types.h as sys/types.h)
+   (sys/wait.h as sys/wait.h))))
