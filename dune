@@ -4,6 +4,26 @@
  (public_name solo5)
  (modules))
 
+(rule
+ (targets cflags)
+ (deps %{lib:solo5:dune-package})
+ (action
+  (with-stdout-to
+   %{targets}
+   (progn
+    (echo "(-isystem ")
+    (bash
+     ; FIXME: do not use realpath and dirname
+     "echo \"$(realpath $(dirname %{lib:solo5:dune-package}))/crt\"")
+    (bash
+     ; FIXME: do not use realpath and dirname
+     "echo \" -I$(realpath $(dirname %{lib:solo5:dune-package})))\"")))))
+
+(install
+ (section lib)
+ (package solo5)
+ (files cflags))
+
 (subdir
  vendor/solo5
  (rule
