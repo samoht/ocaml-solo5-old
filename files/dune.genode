@@ -32,9 +32,11 @@
    %{targets}
    (progn
     (echo "%{read:solo5/ldflags.pc}")
+    (bash "echo \" -T $(realpath %{lib:solo5-genode:genode_dyn.ld})\"")
+    (bash "echo \" $(realpath %{lib:solo5-genode:solo5.lib.so})\"")
     (bash
      ; FIXME: do not use realpath and dirname
-     "echo \"-L$(realpath $(dirname %{lib:solo5-genode:dune-package}))\"")
+     "echo \" -L$(realpath $(dirname %{lib:solo5-genode:dune-package}))\"")
     (echo " -lasmrun -lnolibc -lopenlibm")))))
 
 (install

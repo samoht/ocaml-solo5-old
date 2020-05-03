@@ -108,6 +108,16 @@ end = struct
 
   let main t =
     let s = to_string t in
+    let linker =
+      match t with
+      | Genode -> "-T $(realpath %{lib:solo5-genode:genode_dyn.ld})"
+      | _ -> strf "-T $(realpath %%{lib:solo5-%s:solo5_%s.lds})" s s
+    in
+    let obj =
+      match t with
+      | Genode -> "$(realpath %{lib:solo5-genode:solo5.lib.so})"
+      | _ -> strf "$(realpath %%{lib:solo5-%s:solo5_%s.o})" s s
+    in
     strf
       {|
 (data_only_dirs solo5)
@@ -144,9 +154,11 @@ end = struct
    %%{targets}
    (progn
     (echo "%%{read:solo5/ldflags.pc}")
+    (bash "echo \" %s\"")
+    (bash "echo \" %s\"")
     (bash
      ; FIXME: do not use realpath and dirname
-     "echo \"-L$(realpath $(dirname %%{lib:solo5-%s:dune-package}))\"")
+     "echo \" -L$(realpath $(dirname %%{lib:solo5-%s:dune-package}))\"")
     (echo " -lasmrun -lnolibc -lopenlibm")))))
 
 (install
@@ -154,7 +166,7 @@ end = struct
  (section lib)
  (package solo5-%s))
 |}
-      s s s s s s s
+      s s s s s linker obj s s
 
   let solo5 t =
     let name = to_string t in
