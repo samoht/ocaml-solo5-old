@@ -3,6 +3,6 @@
 #ifndef __VERSION_H__
 #define __VERSION_H__
 
-#define SOLO5_VERSION "26bc7f2eae311e18f3f1eae5caf5c8f322f7ca8c"
+#define SOLO5_VERSION "83b8f3a6e0b83b0f90192fc103f90eb1cce4377d"
 
 #endif
