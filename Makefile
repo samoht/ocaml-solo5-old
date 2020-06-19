@@ -20,4 +20,4 @@ vendor:
 	git commit vendor -m "Updating ${VENDORS}"
 
 distclean: clean
-	rm -rf ${vendor}
+	rm -rf vendor
