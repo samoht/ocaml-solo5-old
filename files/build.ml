@@ -144,7 +144,8 @@ end = struct
      "echo \" -I$(realpath $(dirname %%{lib:solo5:dune-package}))\"")
     (bash
      ; FIXME: do not use realpath and dirname
-     "echo \" -I$(realpath $(dirname %%{lib:solo5-%s:dune-package})))\"")))))
+     "echo \" -I$(realpath $(dirname %%{lib:solo5-%s:dune-package}))\"")
+    (echo " -include _freestanding/overrides.h)")))))
 
 (rule
  (targets ldflags)
@@ -212,9 +213,9 @@ end = struct
    ../../../files/cflags.pc.in)
   (action
    (progn
-    (bash "cp ../../../files/cflags.pc.in .")
-    (bash "./configure.sh")
-    (run %%{make} %s %%{targets}))))
+    (with-stdout-to cflags.logs (bash "cp ../../../files/cflags.pc.in ."))
+    (with-stdout-to cflags.logs (bash "./configure.sh"))
+    (with-stdout-to cflags.logs (run %%{make} %s %%{targets})))))
  (rule
   (targets ldflags.pc)
   (package %s)
@@ -223,9 +224,9 @@ end = struct
    ../../../files/ldflags.pc.in)
   (action
    (progn
-    (bash "cp ../../../files/ldflags.pc.in .")
-    (bash "./configure.sh")
-    (run %%{make} %s %%{targets}))))
+    (with-stdout-to ldflags.logs (bash "cp ../../../files/ldflags.pc.in ."))
+    (with-stdout-to ldflags.logs (bash "./configure.sh"))
+    (with-stdout-to ldflags.logs (run %%{make} %s %%{targets})))))
  (rule
   (targets%s)
   (package %s)
@@ -233,8 +234,8 @@ end = struct
    (source_tree .))
   (action
    (progn
-    (bash "./configure.sh")
-    (run %%{make} %s)%s)))
+    (with-stdout-to configure.logs (bash "./configure.sh"))
+    (with-stdout-to make.logs (run %%{make} %s))%s)))
  (install
   (files%s)
   (section lib)
@@ -249,37 +250,33 @@ end = struct
     let s = to_string t in
     strf
       {|
- (foreign_library
-  (archive_name nolibc)
-  (language c)
-  (names ctype dtoa memchr memcmp memcpy memmove memset strcmp strlen strtol
-    strchr strchrnul strncpy stpncpy strstr stubs vfprintf vsnprintf snprintf
-    fprintf printf sysdeps_solo5)
-  (flags
-   -std=c99
-   -Wall
-   -Wno-parentheses
-   -Werror
-   -O2
-   (:include ../cflags)
-   -nostdlib
-   -isystem
-   ./include
-   -isystem
-   ../openlibm/src
-   -isystem
-   ../openlibm/include)
-  (extra_deps
-   (source_tree .)
-   (source_tree ../openlibm)
+ (env
+  (_
+   (c_flags
+    (:include ../cflags)
+    -nostdlib
+    -I./include
+    -include _freestanding/overrides.h
+    -I../openlibm/src
+    -I../openlibm/include)))
+ (subdir include (dirs :standard _freestanding))
+ (rule
+  (target libnolibc.a)
+  (package solo5-%s)
+  (deps
    %%{lib:solo5:crt}
-   %%{lib:solo5:solo5.h}))
+   %%{lib:solo5:solo5.h}
+   (source_tree .)
+   (source_tree ../openlibm))
+  (action
+   (with-stdout-to build-nolibc.logs
+    (run ../../../scripts/build-nolibc.sh %%{cc}))))
  (install
   (section lib)
   (package solo5-%s)
   (files libnolibc.a))
 |}
-      s
+      s s
 
   let openlibm t =
     let s = to_string t in
@@ -290,8 +287,8 @@ end = struct
    (c_flags
     (:include ../cflags)
     -nostdlib
-    -isystem
-    ../nolibc/include)))
+    -I../nolibc/include
+    -include _freestanding/overrides.h)))
  (rule
   (deps
    (source_tree .)
@@ -301,7 +298,8 @@ end = struct
   (targets libopenlibm.a)
   (package solo5-%s)
   (action
-   (run ../../../scripts/build-openlibm.sh %%{cc})))
+   (with-stdout-to build-openlibm.logs
+    (run ../../../scripts/build-openlibm.sh %%{cc}))))
  (install
   (section lib)
   (package solo5-%s)
@@ -342,7 +340,7 @@ end = struct
     %%{targets}
     ; FIXME: do not use realpath
     (bash
-      "echo \"(-nostdlib -isystem $(realpath ../nolibc/include) -I$(realpath ../openlibm/include) -I$(realpath ../openlibm/src))\""))))
+      "echo \"(-nostdlib -I$(realpath ../nolibc/include) -include _freestanding/overrides.h -I$(realpath ../openlibm/include) -I$(realpath ../openlibm/src))\""))))
  (env
   (_
    (c_flags
@@ -366,7 +364,7 @@ end = struct
   (targets Makefile.config Makefile.common s.h m.h version.h domain.h
     domain_state.h domain_state.tbl)
   (action
-   (run ../../../scripts/configure-ocaml.sh %%{ocaml-config:target} %%{cc})))
+    (with-stdout-to logs (run ../../../scripts/configure-ocaml.sh %%{ocaml-config:target} %%{cc}))))
  (subdir
   runtime
   (rule
@@ -391,7 +389,7 @@ end = struct
    (action
     (progn
      (run cp ../s.h ../m.h ../version.h caml)
-     (run %%{make} libasmrun.a))))
+     (with-stdout-to ocaml.logs (run %%{make} libasmrun.a)))))
   (install
    (section lib)
    (package solo5-%s)
