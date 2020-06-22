@@ -68,6 +68,7 @@
    errno.h
    fcntl.h
    features.h
+   inttypes.h
    limits.h
    math.h
    setjmp.h
