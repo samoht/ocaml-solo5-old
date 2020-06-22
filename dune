@@ -52,6 +52,7 @@
 
 (subdir
  vendor/freestanding/nolibc/include
+ (dirs :standard _freestanding)
  (install
   (section lib)
   (package solo5)
@@ -72,6 +73,8 @@
    string.h
    time.h
    unistd.h
+   (_freestanding/byteorder.h as _freestanding/byteorder.h)
+   (_freestanding/overrides.h as _freestanding/overrides.h)
    (sys/ioctl.h as sys/ioctl.h)
    (sys/stat.h as sys/stat.h)
    (sys/time.h as sys/time.h)
