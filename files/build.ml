@@ -188,7 +188,7 @@ end = struct
       list 4 (List.map (fun l -> strf "(bash \"cp -R %s .\")" l.src) all_files)
     in
     let targets = List.map (fun l -> Filename.basename l.src) all_files in
-    let config = Config.make 6 t in
+    let config = Config.make 7 t in
     let bin =
       match bins with
       | [] -> ""
@@ -213,9 +213,15 @@ end = struct
    ../../../files/cflags.pc.in)
   (action
    (progn
-    (with-stdout-to cflags.logs (bash "cp ../../../files/cflags.pc.in ."))
-    (with-stdout-to cflags.logs (bash "./configure.sh"))
-    (with-stdout-to cflags.logs (run %%{make} %s %%{targets})))))
+    (with-stdout-to
+     cflags.logs
+     (bash "cp ../../../files/cflags.pc.in ."))
+    (with-stdout-to
+     cflags.logs
+     (bash "./configure.sh"))
+    (with-stdout-to
+     cflags.logs
+     (run %%{make} %s %%{targets})))))
  (rule
   (targets ldflags.pc)
   (package %s)
@@ -224,9 +230,15 @@ end = struct
    ../../../files/ldflags.pc.in)
   (action
    (progn
-    (with-stdout-to ldflags.logs (bash "cp ../../../files/ldflags.pc.in ."))
-    (with-stdout-to ldflags.logs (bash "./configure.sh"))
-    (with-stdout-to ldflags.logs (run %%{make} %s %%{targets})))))
+    (with-stdout-to
+     ldflags.logs
+     (bash "cp ../../../files/ldflags.pc.in ."))
+    (with-stdout-to
+     ldflags.logs
+     (bash "./configure.sh"))
+    (with-stdout-to
+     ldflags.logs
+     (run %%{make} %s %%{targets})))))
  (rule
   (targets%s)
   (package %s)
@@ -234,8 +246,12 @@ end = struct
    (source_tree .))
   (action
    (progn
-    (with-stdout-to configure.logs (bash "./configure.sh"))
-    (with-stdout-to make.logs (run %%{make} %s))%s)))
+    (with-stdout-to
+     configure.logs
+     (bash "./configure.sh"))
+    (with-stdout-to
+     make.logs
+     (run %%{make} %s))%s)))
  (install
   (files%s)
   (section lib)
@@ -256,10 +272,13 @@ end = struct
     (:include ../cflags)
     -nostdlib
     -I./include
-    -include _freestanding/overrides.h
+    -include
+    _freestanding/overrides.h
     -I../openlibm/src
     -I../openlibm/include)))
- (subdir include (dirs :standard _freestanding))
+ (subdir
+  include
+  (dirs :standard _freestanding))
  (rule
   (target libnolibc.a)
   (package solo5-%s)
@@ -269,7 +288,8 @@ end = struct
    (source_tree .)
    (source_tree ../openlibm))
   (action
-   (with-stdout-to build-nolibc.logs
+   (with-stdout-to
+    build-nolibc.logs
     (run ../../../scripts/build-nolibc.sh %%{cc}))))
  (install
   (section lib)
@@ -288,7 +308,8 @@ end = struct
     (:include ../cflags)
     -nostdlib
     -I../nolibc/include
-    -include _freestanding/overrides.h)))
+    -include
+    _freestanding/overrides.h)))
  (rule
   (deps
    (source_tree .)
@@ -298,7 +319,8 @@ end = struct
   (targets libopenlibm.a)
   (package solo5-%s)
   (action
-   (with-stdout-to build-openlibm.logs
+   (with-stdout-to
+    build-openlibm.logs
     (run ../../../scripts/build-openlibm.sh %%{cc}))))
  (install
   (section lib)
@@ -364,7 +386,9 @@ end = struct
   (targets Makefile.config Makefile.common s.h m.h version.h domain.h
     domain_state.h domain_state.tbl)
   (action
-    (with-stdout-to logs (run ../../../scripts/configure-ocaml.sh %%{ocaml-config:target} %%{cc}))))
+   (with-stdout-to
+    logs
+    (run ../../../scripts/configure-ocaml.sh %%{ocaml-config:target} %%{cc}))))
  (subdir
   runtime
   (rule
@@ -389,7 +413,9 @@ end = struct
    (action
     (progn
      (run cp ../s.h ../m.h ../version.h caml)
-     (with-stdout-to ocaml.logs (run %%{make} libasmrun.a)))))
+     (with-stdout-to
+      ocaml.logs
+      (run %%{make} libasmrun.a)))))
   (install
    (section lib)
    (package solo5-%s)

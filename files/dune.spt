@@ -56,10 +56,16 @@
    ../../../files/cflags.pc.in)
   (action
    (progn
-    (with-stdout-to cflags.logs (bash "cp ../../../files/cflags.pc.in ."))
-    (with-stdout-to cflags.logs (bash "./configure.sh"))
-    (with-stdout-to cflags.logs (run %{make} CONFIG_HVT= CONFIG_SPT=1 CONFIG_VIRTIO= CONFIG_MUEN=
-      CONFIG_GENODE= %{targets})))))
+    (with-stdout-to
+     cflags.logs
+     (bash "cp ../../../files/cflags.pc.in ."))
+    (with-stdout-to
+     cflags.logs
+     (bash "./configure.sh"))
+    (with-stdout-to
+     cflags.logs
+     (run %{make} CONFIG_HVT= CONFIG_SPT=1 CONFIG_VIRTIO= CONFIG_MUEN=
+       CONFIG_GENODE= %{targets})))))
  (rule
   (targets ldflags.pc)
   (package solo5-spt)
@@ -68,10 +74,16 @@
    ../../../files/ldflags.pc.in)
   (action
    (progn
-    (with-stdout-to ldflags.logs (bash "cp ../../../files/ldflags.pc.in ."))
-    (with-stdout-to ldflags.logs (bash "./configure.sh"))
-    (with-stdout-to ldflags.logs (run %{make} CONFIG_HVT= CONFIG_SPT=1 CONFIG_VIRTIO= CONFIG_MUEN=
-      CONFIG_GENODE= %{targets})))))
+    (with-stdout-to
+     ldflags.logs
+     (bash "cp ../../../files/ldflags.pc.in ."))
+    (with-stdout-to
+     ldflags.logs
+     (bash "./configure.sh"))
+    (with-stdout-to
+     ldflags.logs
+     (run %{make} CONFIG_HVT= CONFIG_SPT=1 CONFIG_VIRTIO= CONFIG_MUEN=
+       CONFIG_GENODE= %{targets})))))
  (rule
   (targets solo5-spt solo5_spt.o solo5_spt.lds)
   (package solo5-spt)
@@ -79,9 +91,13 @@
    (source_tree .))
   (action
    (progn
-    (with-stdout-to configure.logs (bash "./configure.sh"))
-    (with-stdout-to make.logs (run %{make} CONFIG_HVT= CONFIG_SPT=1 CONFIG_VIRTIO= CONFIG_MUEN=
-      CONFIG_GENODE=))
+    (with-stdout-to
+     configure.logs
+     (bash "./configure.sh"))
+    (with-stdout-to
+     make.logs
+     (run %{make} CONFIG_HVT= CONFIG_SPT=1 CONFIG_VIRTIO= CONFIG_MUEN=
+       CONFIG_GENODE=))
     (bash "cp -R tenders/spt/solo5-spt .")
     (bash "cp -R bindings/spt/solo5_spt.o .")
     (bash "cp -R bindings/spt/solo5_spt.lds ."))))
@@ -102,10 +118,13 @@
     (:include ../cflags)
     -nostdlib
     -I./include
-    -include _freestanding/overrides.h
+    -include
+    _freestanding/overrides.h
     -I../openlibm/src
     -I../openlibm/include)))
- (subdir include (dirs :standard _freestanding))
+ (subdir
+  include
+  (dirs :standard _freestanding))
  (rule
   (target libnolibc.a)
   (package solo5-spt)
@@ -115,7 +134,8 @@
    (source_tree .)
    (source_tree ../openlibm))
   (action
-   (with-stdout-to build-nolibc.logs
+   (with-stdout-to
+    build-nolibc.logs
     (run ../../../scripts/build-nolibc.sh %{cc}))))
  (install
   (section lib)
@@ -130,7 +150,8 @@
     (:include ../cflags)
     -nostdlib
     -I../nolibc/include
-    -include _freestanding/overrides.h)))
+    -include
+    _freestanding/overrides.h)))
  (rule
   (deps
    (source_tree .)
@@ -140,7 +161,8 @@
   (targets libopenlibm.a)
   (package solo5-spt)
   (action
-   (with-stdout-to build-openlibm.logs
+   (with-stdout-to
+    build-openlibm.logs
     (run ../../../scripts/build-openlibm.sh %{cc}))))
  (install
   (section lib)
@@ -202,7 +224,9 @@
   (targets Makefile.config Makefile.common s.h m.h version.h domain.h
     domain_state.h domain_state.tbl)
   (action
-    (with-stdout-to logs (run ../../../scripts/configure-ocaml.sh %{ocaml-config:target} %{cc}))))
+   (with-stdout-to
+    logs
+    (run ../../../scripts/configure-ocaml.sh %{ocaml-config:target} %{cc}))))
  (subdir
   runtime
   (rule
@@ -227,7 +251,9 @@
    (action
     (progn
      (run cp ../s.h ../m.h ../version.h caml)
-     (with-stdout-to ocaml.logs (run %{make} libasmrun.a)))))
+     (with-stdout-to
+      ocaml.logs
+      (run %{make} libasmrun.a)))))
   (install
    (section lib)
    (package solo5-spt)

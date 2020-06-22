@@ -56,10 +56,16 @@
    ../../../files/cflags.pc.in)
   (action
    (progn
-    (with-stdout-to cflags.logs (bash "cp ../../../files/cflags.pc.in ."))
-    (with-stdout-to cflags.logs (bash "./configure.sh"))
-    (with-stdout-to cflags.logs (run %{make} CONFIG_HVT= CONFIG_SPT= CONFIG_VIRTIO=1 CONFIG_MUEN=
-      CONFIG_GENODE= %{targets})))))
+    (with-stdout-to
+     cflags.logs
+     (bash "cp ../../../files/cflags.pc.in ."))
+    (with-stdout-to
+     cflags.logs
+     (bash "./configure.sh"))
+    (with-stdout-to
+     cflags.logs
+     (run %{make} CONFIG_HVT= CONFIG_SPT= CONFIG_VIRTIO=1 CONFIG_MUEN=
+       CONFIG_GENODE= %{targets})))))
  (rule
   (targets ldflags.pc)
   (package solo5-virtio)
@@ -68,10 +74,16 @@
    ../../../files/ldflags.pc.in)
   (action
    (progn
-    (with-stdout-to ldflags.logs (bash "cp ../../../files/ldflags.pc.in ."))
-    (with-stdout-to ldflags.logs (bash "./configure.sh"))
-    (with-stdout-to ldflags.logs (run %{make} CONFIG_HVT= CONFIG_SPT= CONFIG_VIRTIO=1 CONFIG_MUEN=
-      CONFIG_GENODE= %{targets})))))
+    (with-stdout-to
+     ldflags.logs
+     (bash "cp ../../../files/ldflags.pc.in ."))
+    (with-stdout-to
+     ldflags.logs
+     (bash "./configure.sh"))
+    (with-stdout-to
+     ldflags.logs
+     (run %{make} CONFIG_HVT= CONFIG_SPT= CONFIG_VIRTIO=1 CONFIG_MUEN=
+       CONFIG_GENODE= %{targets})))))
  (rule
   (targets solo5-virtio-mkimage.sh solo5-virtio-run.sh solo5_virtio.o
     solo5_virtio.lds)
@@ -80,9 +92,13 @@
    (source_tree .))
   (action
    (progn
-    (with-stdout-to configure.logs (bash "./configure.sh"))
-    (with-stdout-to make.logs (run %{make} CONFIG_HVT= CONFIG_SPT= CONFIG_VIRTIO=1 CONFIG_MUEN=
-      CONFIG_GENODE=))
+    (with-stdout-to
+     configure.logs
+     (bash "./configure.sh"))
+    (with-stdout-to
+     make.logs
+     (run %{make} CONFIG_HVT= CONFIG_SPT= CONFIG_VIRTIO=1 CONFIG_MUEN=
+       CONFIG_GENODE=))
     (bash "cp -R scripts/virtio-mkimage/solo5-virtio-mkimage.sh .")
     (bash "cp -R scripts/virtio-run/solo5-virtio-run.sh .")
     (bash "cp -R bindings/virtio/solo5_virtio.o .")
@@ -106,10 +122,13 @@
     (:include ../cflags)
     -nostdlib
     -I./include
-    -include _freestanding/overrides.h
+    -include
+    _freestanding/overrides.h
     -I../openlibm/src
     -I../openlibm/include)))
- (subdir include (dirs :standard _freestanding))
+ (subdir
+  include
+  (dirs :standard _freestanding))
  (rule
   (target libnolibc.a)
   (package solo5-virtio)
@@ -119,7 +138,8 @@
    (source_tree .)
    (source_tree ../openlibm))
   (action
-   (with-stdout-to build-nolibc.logs
+   (with-stdout-to
+    build-nolibc.logs
     (run ../../../scripts/build-nolibc.sh %{cc}))))
  (install
   (section lib)
@@ -134,7 +154,8 @@
     (:include ../cflags)
     -nostdlib
     -I../nolibc/include
-    -include _freestanding/overrides.h)))
+    -include
+    _freestanding/overrides.h)))
  (rule
   (deps
    (source_tree .)
@@ -144,7 +165,8 @@
   (targets libopenlibm.a)
   (package solo5-virtio)
   (action
-   (with-stdout-to build-openlibm.logs
+   (with-stdout-to
+    build-openlibm.logs
     (run ../../../scripts/build-openlibm.sh %{cc}))))
  (install
   (section lib)
@@ -206,7 +228,9 @@
   (targets Makefile.config Makefile.common s.h m.h version.h domain.h
     domain_state.h domain_state.tbl)
   (action
-    (with-stdout-to logs (run ../../../scripts/configure-ocaml.sh %{ocaml-config:target} %{cc}))))
+   (with-stdout-to
+    logs
+    (run ../../../scripts/configure-ocaml.sh %{ocaml-config:target} %{cc}))))
  (subdir
   runtime
   (rule
@@ -231,7 +255,9 @@
    (action
     (progn
      (run cp ../s.h ../m.h ../version.h caml)
-     (with-stdout-to ocaml.logs (run %{make} libasmrun.a)))))
+     (with-stdout-to
+      ocaml.logs
+      (run %{make} libasmrun.a)))))
   (install
    (section lib)
    (package solo5-virtio)
